@@ -113,7 +113,33 @@ const Timetable = () => {
     }
 
     const course = schedule[day]?.[time];
-    if (!course || course === "Done") return;
+    if (!course) return;
+
+    if (course === "Done") {
+      // Get the original course from initialSchedule
+      const originalCourse = initialSchedule[day]?.[time];
+      if (!originalCourse) return;
+
+      const updates = {
+        [`users/${user.uid}/schedule/${day}/${time}`]: originalCourse,
+        [`users/${user.uid}/attendance/${originalCourse}/present`]: Math.max((counts[originalCourse]?.present || 0) - 1, 0),
+      };
+
+      try {
+        await update(ref(db), updates);
+        console.log("Attendance undone");
+        setSchedule((prev) => ({
+          ...prev,
+          [day]: {
+            ...prev[day],
+            [time]: originalCourse,
+          },
+        }));
+      } catch (error) {
+        console.error("Failed to undo:", error);
+      }
+      return;
+    } 
 
     const updates = {
       [`users/${user.uid}/schedule/${day}/${time}`]: "Done",
