@@ -23,13 +23,7 @@ const Timetable = () => {
     'PH-322': 'bg-green-100 text-green-800 border-green-200',
     'PH-312': 'bg-purple-100 text-purple-800 border-purple-200',
     'PH-321': 'bg-orange-100 text-orange-800 border-orange-200',
-    'PH-321 B-1': 'bg-yellow-100 text-yellow-800 border-yellow-200',
-    'PH-321 B-2': 'bg-amber-100 text-amber-800 border-amber-200',
     'Labs': 'bg-red-100 text-red-800 border-red-200',
-    'Break': 'bg-pink-100 text-pink-800 border-pink-200',
-    'DSA': 'bg-teal-100 text-teal-800 border-teal-200',
-    'Lunch': 'bg-gray-100 text-gray-800 border-gray-200',
-    'Reading Room': 'bg-cyan-100 text-cyan-800 border-cyan-200',
     'Done': 'bg-gray-300 text-gray-700 border-gray-400'
   };
 
@@ -37,39 +31,27 @@ const Timetable = () => {
     'Monday': {
       '9:00-10:00': 'OE',
       '10:00-11:00': 'PH-322',
-      '11:00-11:30': 'Break',
-      '11:30-1:00': 'DSA',
-      '1:00-1:30': 'Lunch',
       '1:30-2:30': 'PH-312'
     },
     'Tuesday': {
-      '9:00-1:00': 'Reading Room',
-      '1:00-1:30': 'Lunch',
-      '2:30-3:30': 'PH-321 B-1',
       '3:30-4:30': 'Labs',
       '4:30-5:30': 'Labs'
     },
     'Wednesday': {
       '9:00-10:00': 'OE',
       '10:00-11:00': 'PH-322',
-      '11:00-11:30': 'Break',
-      '1:00-1:30': 'Lunch',
       '1:30-2:30': 'PH-312',
-      '2:30-3:30': 'PH-321 B-2',
+      '2:30-3:30': 'PH-321',
       '3:30-4:30': 'Labs',
       '4:30-5:30': 'Labs'
     },
     'Thursday': {
-      '9:00-1:00': 'Reading Room',
-      '1:00-1:30': 'Lunch',
+
       '3:30-4:30': 'PH-321'
     },
     'Friday': {
       '9:00-10:00': 'OE',
       '10:00-11:00': 'PH-322',
-      '11:00-11:30': 'Break',
-      '11:30-1:00': 'DSA',
-      '1:00-1:30': 'Lunch',
       '1:30-2:30': 'PH-312'
     }
   };
@@ -149,10 +131,11 @@ const Timetable = () => {
   return (
     <Card className="w-full max-w-6xl">
   <CardHeader className="bg-gray-50 rounded-t-lg">
-    <div className="text-center text-xl font-semibold">
-      {currentDate.toLocaleDateString()} {currentDate.toLocaleTimeString()}
-    </div>
-  </CardHeader>
+  <div className="text-center text-xl font-semibold text-gray-700">
+    {currentDate.toLocaleDateString()} {currentDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
+  </div>
+</CardHeader>
+
   <CardContent className="p-4">
     <div className="overflow-x-auto">
       <table className="w-full border-collapse">
@@ -217,14 +200,28 @@ const Timetable = () => {
     </div>
 
 
-    <div className="mt-4 flex flex-wrap gap-4 justify-center border-t pt-4">
-      {Object.keys(courseColors).map(course => (
-        <div key={course} className="flex flex-col items-center">
-          <span className="text-sm font-medium">{course}</span>
-          <span>Present: {counts[course]?.present || 0}</span>
-        </div>
-      ))}
-    </div>
+    <div className="mt-4 border-t pt-4">
+  <h2 className="text-lg font-semibold text-center mb-2">Course Attendance</h2>
+  <div className="overflow-x-auto">
+    <table className="w-full text-center border-collapse">
+      <thead>
+        <tr className="bg-gray-200">
+          <th className="border p-2">Course</th>
+          <th className="border p-2">Present</th>
+        </tr>
+      </thead>
+      <tbody>
+        {Object.keys(courseColors).map(course => (
+          <tr key={course} className="hover:bg-gray-50">
+            <td className={`border p-2 ${courseColors[course]} font-medium`}>{course}</td>
+            <td className="border p-2">{counts[course]?.present || 0}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</div>
+
   </CardContent>
 </Card>
   );
