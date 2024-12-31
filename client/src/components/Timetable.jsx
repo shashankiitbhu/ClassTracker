@@ -36,7 +36,7 @@ const Timetable = () => {
   ];
 
   const courseColors = {
-    'OE': 'bg-blue-100 text-blue-800 border-blue-200',
+    'BM-521': 'bg-blue-100 text-blue-800 border-blue-200',
     'PH-322': 'bg-green-100 text-green-800 border-green-200',
     'PH-312': 'bg-purple-100 text-purple-800 border-purple-200',
     'PH-321': 'bg-orange-100 text-orange-800 border-orange-200',
@@ -46,27 +46,27 @@ const Timetable = () => {
 
   const initialSchedule = {
     'Monday': {
-      '9:00-10:00': 'OE',
       '10:00-11:00': 'PH-322',
       '1:30-2:30': 'PH-312'
     },
     'Tuesday': {
+      '1:30-2:30': 'BM-521',
       '3:30-4:30': 'Labs',
       '4:30-5:30': 'Labs'
     },
     'Wednesday': {
-      '9:00-10:00': 'OE',
-      '10:00-11:00': 'PH-322',
+      '10:00-11:00':'PH-322',
       '1:30-2:30': 'PH-312',
       '2:30-3:30': 'PH-321',
       '3:30-4:30': 'Labs',
       '4:30-5:30': 'Labs'
     },
     'Thursday': {
+      '1:30-2:30': 'BM-521',
+      '2:30-3:30': 'BM-521',
       '3:30-4:30': 'PH-321'
     },
     'Friday': {
-      '9:00-10:00': 'OE',
       '10:00-11:00': 'PH-322',
       '1:30-2:30': 'PH-312'
     }
