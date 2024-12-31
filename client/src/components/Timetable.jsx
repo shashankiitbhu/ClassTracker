@@ -4,6 +4,7 @@ import { CheckCircleIcon } from '@heroicons/react/solid';
 import { getDatabase, ref, onValue, update } from "firebase/database";
 import { getAuth } from 'firebase/auth';
 import { db } from '../firebase';
+import AttendanceDialog from './AlertDialog';
 
 const getWeekRange = (weekOffset) => {
   const today = new Date();
@@ -22,6 +23,8 @@ const getWeekRange = (weekOffset) => {
 };
 
 const Timetable = () => {
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedCell, setSelectedCell] = useState(null);
   const days = ['Time', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
   const times = [
     '9:00-10:00',
@@ -41,8 +44,12 @@ const Timetable = () => {
     'PH-312': 'bg-purple-100 text-purple-800 border-purple-200',
     'PH-321': 'bg-orange-100 text-orange-800 border-orange-200',
     'Labs': 'bg-red-100 text-red-800 border-red-200',
-    'Done': 'bg-gray-300 text-gray-700 border-gray-400'
+    'Done': 'bg-gray-300 text-gray-700 border-gray-400',
+    'Present': 'bg-green-100 text-green-800 border-green-200',
+    'Absent': 'bg-red-100 text-red-800 border-red-200',
+    'Cancelled': 'bg-orange-100 text-orange-800 border-orange-200'
   };
+  
 
   const initialSchedule = {
     'Monday': {
@@ -244,7 +251,7 @@ const Timetable = () => {
   };
   
 
-  const handleClick = async (day, time) => {
+  const handleClick = (day, time) => {
     if (!user) {
       console.log("Please sign in to track attendance");
       return;
@@ -253,31 +260,35 @@ const Timetable = () => {
     const course = initialSchedule[day]?.[time];
     if (!course) return;
   
-    const isDone = schedule[day]?.[time] === "Done";
-    const updates = isDone
-      ? {
-          [`users/${user.uid}/weeklySchedules/week${currentWeekOffset}/${day}/${time}`]: null,
-          [`users/${user.uid}/attendance/${course}/present`]: Math.max((counts[course]?.present || 0) - 1, 0),
-        }
-      : {
-          [`users/${user.uid}/weeklySchedules/week${currentWeekOffset}/${day}/${time}`]: "Done",
-          [`users/${user.uid}/attendance/${course}/present`]: (counts[course]?.present || 0) + 1,
-        };
+    // Set the selected cell and open the dialog
+    setSelectedCell({ day, time, course });
+    setDialogOpen(true);
+  };
+  
+  const handleStatusSelect = async (status) => {
+    const { day, time, course } = selectedCell;
+  
+    const updates = {
+      [`users/${user.uid}/weeklySchedules/week${currentWeekOffset}/${day}/${time}`]: status,
+      [`users/${user.uid}/attendance/${course}/${status.toLowerCase()}`]:
+        (counts[course]?.[status.toLowerCase()] || 0) + 1,
+    };
   
     try {
       await update(ref(db), updates);
-      console.log(isDone ? "Attendance undone" : "Attendance updated");
+      console.log(`${status} status updated successfully.`);
       setSchedule((prev) => ({
         ...prev,
         [day]: {
           ...prev[day],
-          [time]: isDone ? course : "Done",
+          [time]: status,
         },
       }));
     } catch (error) {
       console.error("Failed to update schedule:", error);
     }
   };
+  
   
 
   const isPast = (day, time) => {
@@ -392,29 +403,44 @@ const Timetable = () => {
           ))}
         </tbody>
       </table>
+      <AttendanceDialog
+        open={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+        onStatusSelect={handleStatusSelect}
+      />
     </div>
 
     <div className="mt-4 border-t pt-4">
-      <h2 className="text-lg font-semibold text-center mb-2">Course Attendance</h2>
-      <div className="overflow-x-auto">
-        <table className="w-full text-center border-collapse">
-          <thead>
-            <tr className="bg-gray-200">
-              <th className="border p-2">Course</th>
-              <th className="border p-2">Present</th>
+  <h2 className="text-lg font-semibold text-center mb-2">Course Attendance</h2>
+  <div className="overflow-x-auto">
+    <table className="w-full text-center border-collapse">
+      <thead>
+        <tr className="bg-gray-200">
+          <th className="border p-2">Course</th>
+          <th className="border p-2">Present</th>
+          <th className="border p-2">Percentage</th>
+        </tr>
+      </thead>
+      <tbody>
+        {Object.keys(courseColors).map((course) => {
+          const present = counts[course]?.present || 0;
+          const absent = counts[course]?.absent || 0;
+          const total = present + absent;
+          const percentage = total > 0 ? ((present / total) * 100).toFixed(2) : 0;
+          
+          return (
+            <tr key={course} className="hover:bg-gray-50">
+              <td className={`border p-2 ${courseColors[course]} font-medium`}>{course}</td>
+              <td className="border p-2">{present}</td>
+              <td className="border p-2">{percentage}%</td>
             </tr>
-          </thead>
-          <tbody>
-            {Object.keys(courseColors).map((course) => (
-              <tr key={course} className="hover:bg-gray-50">
-                <td className={`border p-2 ${courseColors[course]} font-medium`}>{course}</td>
-                <td className="border p-2">{counts[course]?.present || 0}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+          );
+        })}
+      </tbody>
+    </table>
+  </div>
+</div>
+
   </CardContent>
 </Card>
 
